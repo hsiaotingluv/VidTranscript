@@ -1,5 +1,5 @@
 services:
-  ai-video-transcriber:
+  vid-transcript:
     build: .
     ports:
       - "8000:8000"
@@ -35,4 +35,4 @@ services:
       - ./static:/usr/share/nginx/html:ro
     restart: unless-stopped
     depends_on:
-      - ai-video-transcriber
+      - vid-transcript

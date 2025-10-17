@@ -50,7 +50,14 @@ TEMP_DIR.mkdir(exist_ok=True)
 
 # Initialize processors
 video_processor = VideoProcessor()
-transcriber = Transcriber()
+# Use a smaller default model for faster startup; can override via WHISPER_MODEL_SIZE
+transcriber = Transcriber(model_size=os.getenv("WHISPER_MODEL_SIZE", "tiny"))
+
+# Preload model at startup to avoid first-request delay
+try:
+    transcriber._load_model()
+except Exception as _e:
+    logger.warning(f"Whisper preload skipped: {_e}")
 
 # Persist tasks state to file
 import json

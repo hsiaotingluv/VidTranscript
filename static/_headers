@@ -1,0 +1,14 @@
+# Ensure SSE works through Netlify proxy
+# These headers are added on the edge in addition to upstream response
+
+/api/task-stream/*
+  Cache-Control: no-cache
+  Content-Type: text/event-stream; charset=utf-8
+  Connection: keep-alive
+  X-Accel-Buffering: no
+
+# Optional CORS hints when not using same-origin (usually unnecessary with Netlify proxy)
+#/api/*
+#  Access-Control-Allow-Origin: https://vidtranscript.com
+#  Access-Control-Allow-Methods: GET, POST, OPTIONS
+#  Access-Control-Allow-Headers: *

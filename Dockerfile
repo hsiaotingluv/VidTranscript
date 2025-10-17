@@ -1,10 +1,10 @@
-# AI视频转录器 Docker镜像 - 使用标准镜像确保兼容性
+# AI Video Transcriber Docker image - use a standard base image for compatibility
 FROM python:3.9-slim
 
-# 设置工作目录
+# Set working directory
 WORKDIR /app
 
-# 安装系统依赖
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     curl \
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制requirements.txt并安装Python依赖
+# Copy requirements.txt and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

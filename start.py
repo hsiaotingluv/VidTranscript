@@ -96,12 +96,13 @@ def main():
     print("=" * 50)
     
     try:
-        # Change to backend directory and start
-        backend_dir = Path(__file__).parent / "backend"
-        os.chdir(backend_dir)
-        
+        # Stay at project root and run backend as a package module
+        project_root = Path(__file__).parent
+        os.chdir(project_root)
+
+        app_path = "backend.main:app"
         cmd = [
-            sys.executable, "-m", "uvicorn", "main:app",
+            sys.executable, "-m", "uvicorn", app_path,
             "--host", host,
             "--port", str(port)
         ]

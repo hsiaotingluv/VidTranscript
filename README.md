@@ -10,6 +10,22 @@ An AI-powered video transcription tool that supports multiple video platforms in
 
 </div>
 
+## Table of Contents
+
+- [Features](#-features)
+- [Quick Start](#-quick-start)
+  - [Installation](#installation)
+  - [Start the Service](#start-the-service)
+  - [Production Mode](#production-mode-recommended-for-long-videos)
+  - [Demo without GCP costs](#demo-without-gcp-costs)
+- [Usage Guide](#-usage-guide)
+- [Supported Platforms](#-supported-platforms-top-20)
+- [Technical Architecture](#-technical-architecture)
+- [Configuration](#-configuration-options)
+- [FAQ](#-faq)
+- [Contributing](#-contributing)
+- [Acknowledgments](#acknowledgments)
+
 ## ✨ Features
 
 - 🎥 **Multi-Platform Support**: Works with YouTube, Tiktok, Bilibili, and 2000+ more
@@ -18,6 +34,24 @@ An AI-powered video transcription tool that supports multiple video platforms in
 - 📱 **Mobile-Friendly**: Perfect support for mobile devices
 
 ## 🚀 Quick Start
+
+If you just want to try it locally right now:
+
+```bash
+# macOS: install FFmpeg first
+brew install ffmpeg
+
+# Create & activate a virtualenv
+cd ~/Desktop/VidTranscript/VidTranscript
+python3 -m venv venv
+source venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+# Start
+python3 start.py
+# Open http://localhost:8000
+```
 
 ### Prerequisites
 
@@ -30,8 +64,8 @@ An AI-powered video transcription tool that supports multiple video platforms in
 
 ```bash
 # Clone the repository
-git clone https://github.com/wendy7756/AI-Video-Transcriber.git
-cd AI-Video-Transcriber
+git clone https://github.com/hsiaotingluv/VidTranscript.git
+cd VidTranscript
 
 # Run installation script
 chmod +x install.sh
@@ -42,15 +76,15 @@ chmod +x install.sh
 
 ```bash
 # Clone the repository
-git clone https://github.com/wendy7756/AI-Video-Transcriber.git
-cd AI-Video-Transcriber
+git clone https://github.com/hsiaotingluv/VidTranscript.git
+cd VidTranscript
 
 # Using Docker Compose (easiest)
 docker-compose up -d
 
 # Or using Docker directly
-docker build -t ai-video-transcriber .
-docker run -p 8000:8000 ai-video-transcriber
+docker build -t vid-transcript .
+docker run -p 8000:8000 vid-transcript
 ```
 
 #### Method 3: Manual Installation
@@ -96,6 +130,47 @@ python3 start.py --prod
 ```
 
 This keeps the SSE connection stable throughout long tasks (30–60+ min).
+
+### Start Modes
+
+1) **Local (default, everything on your machine)**
+
+```bash
+cd ~/Desktop/VidTranscript/VidTranscript
+source venv/bin/activate
+export WHISPER_MODEL_SIZE=tiny   # optional, faster
+python3 start.py
+# Open http://localhost:8000
+```
+
+2) **Production (no hot‑reload, stable for long runs)**
+
+```bash
+cd ~/Desktop/VidTranscript/VidTranscript
+source venv/bin/activate
+export WHISPER_MODEL_SIZE=tiny   # optional
+python3 start.py --prod
+# Open http://localhost:8000
+```
+
+3) **Demo via Netlify + tunnel (optional, not required for local)**
+
+If you later want the public site to hit your laptop backend:
+
+- Start backend locally (as above) and start an HTTPS tunnel (e.g., ngrok):
+  ```bash
+  ngrok http http://127.0.0.1:8000
+  ```
+- Either open `https://vidtranscript.com/?api=https://<your-tunnel-host>`
+  or set `static/_redirects` to:
+  ```
+  /api/*  https://<your-tunnel-host>/api/:splat  200
+  ```
+  and deploy to Netlify.
+
+Notes:
+- The site runs fully local by default. `static/index.html` loads `/static/app.js` first, and `static/app.js` calls the API at relative path `/api` (same origin). No CORS needed.
+- For fastest demos, use `WHISPER_MODEL_SIZE=tiny` or `tiny.en`.
 
 ### Demo without GCP costs
 
@@ -157,6 +232,24 @@ Visit `https://vidtranscript.com` (or `https://www.vidtranscript.com`). All `/ap
 - Ctrl+C to stop `uvicorn` and the tunnel.
 - Optionally remove the `_redirects` line and redeploy so production no longer proxies to your laptop.
 
+#### Netlify settings (static site)
+
+- **Publish directory**: `static/`
+- JS loader in `static/index.html` loads `/app.js` first (Netlify) with fallback to `/static/app.js` (local dev).
+- `_redirects` must be placed under `static/` to apply.
+
+#### SSE through Netlify (for live progress)
+
+Add `static/_headers` to keep Server‑Sent Events unbuffered:
+
+```
+/api/task-stream/*
+  Cache-Control: no-cache
+  Content-Type: text/event-stream; charset=utf-8
+  Connection: keep-alive
+  X-Accel-Buffering: no
+```
+
 ## 📖 Usage Guide
 
 1. **Enter Video URL**: Paste a video link from YouTube, Bilibili, or other supported platforms
@@ -209,7 +302,7 @@ Important:
 
 ### Project Structure
 ```
-AI-Video-Transcriber/
+VidTranscript/
 ├── backend/                 # Backend code
 │   ├── main.py             # FastAPI main application
 │   ├── video_processor.py  # Video processing module
@@ -275,14 +368,14 @@ A: Docker provides the easiest deployment method:
 **Quick Start:**
 ```bash
 # Clone and setup
-git clone https://github.com/wendy7756/AI-Video-Transcriber.git
-cd AI-Video-Transcriber
+git clone https://github.com/hsiaotingluv/VidTranscript.git
+cd VidTranscript
 # Start with Docker Compose (recommended)
 docker-compose up -d
 
 # Or build and run manually
-docker build -t ai-video-transcriber .
-docker run -p 8000:8000 ai-video-transcriber
+docker build -t vid-transcript .
+docker run -p 8000:8000 vid-transcript
 ```
 
 **Common Docker Issues:**
@@ -296,7 +389,7 @@ docker run -p 8000:8000 ai-video-transcriber
 docker ps
 
 # Check container logs
-docker logs ai-video-transcriber-ai-video-transcriber-1
+docker logs vid-transcript-vid-transcript-1
 
 # Stop service
 docker-compose down
@@ -330,10 +423,10 @@ A: Memory usage varies depending on the deployment method and workload:
 WHISPER_MODEL_SIZE=tiny  # or base
 
 # For Docker, limit container memory if needed
-docker run -m 1g -p 8000:8000 --env-file .env ai-video-transcriber
+docker run -m 1g -p 8000:8000 --env-file .env vid-transcript
 
 # Monitor memory usage
-docker stats ai-video-transcriber-ai-video-transcriber-1
+docker stats vid-transcript-vid-transcript-1
 ```
 
 ### Q: Network connection errors or timeouts?
