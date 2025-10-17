@@ -32,108 +32,172 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
+            background: radial-gradient(1000px 600px at 80% 10%, rgba(114, 92, 255, 0.25), transparent 60%),
+                        radial-gradient(800px 500px at 10% 30%, rgba(255, 99, 132, 0.18), transparent 60%),
+                        #0f1021;
+            color: #EAEAF2;
             line-height: 1.6;
+            min-height: 100vh;
         }
 
         .container {
             max-width: 1200px;
             margin: 40px auto;
             padding: 40px;
+            position: relative;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 20px 0;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
             margin-bottom: 10px;
-            font-weight: 700;
-            color: var(--text-color);
+            padding: 48px 0 12px 0;
         }
 
-        .header p {
-            font-size: 1.1rem;
-            color: var(--text-muted);
+        .header h1.hero-title {
+            font-size: clamp(2.8rem, 6vw, 4.8rem);
+            margin-bottom: 8px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #fff;
+            line-height: 1.08;
+        }
+        .hero-title .break { display: block; }
+        .hero-title .hero-generator { font-size: clamp(2.8rem, 6.8vw, 5.2rem); font-weight: 800; }
+
+        .header p.hero-subtitle {
+            font-size: 1.05rem;
+            color: #B9BCD6;
             margin-bottom: 0;
         }
 
-        .form-card {
-            background: var(--surface-color);
-            padding: 40px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 50px;
+        .gradient-text {
+            background: linear-gradient(90deg, #FF6A88 0%, #B16CEA 35%, #7BD3EA 70%, #6EE7B7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
+
+        .form-card {
+            background: transparent;
+            padding: 28px 0 12px 0;
+            border-radius: var(--border-radius);
+            box-shadow: none;
+            margin-bottom: 24px;
+        }
+        .form-card form { max-width: 860px; margin: 0 auto; }
+        .input-wrap { position: relative; }
 
         .form-group {
             margin-bottom: 20px;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-color);
-        }
+        .form-group label { display: none; }
 
         .form-control {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
+            padding: 16px 20px;
+            border: 2px solid rgba(255,255,255,0.12);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            color: #fff;
             font-size: 16px;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            outline: none;
+            height: 56px;
+            padding-right: 190px; /* space for inline CTA */
+            -webkit-appearance: none;
+            appearance: none;
+            color-scheme: dark;
+            background-clip: padding-box;
         }
 
         .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+            border-color: rgba(255,255,255,0.35);
+            box-shadow: 0 0 0 6px rgba(255,255,255,0.05);
         }
+
+        /* Keep dark theme when Chrome/Safari applies autofill styles */
+        .form-control:-webkit-autofill,
+        .form-control:-webkit-autofill:hover,
+        .form-control:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0px 1000px rgba(255,255,255,0.06) inset !important;
+            box-shadow: 0 0 0px 1000px rgba(255,255,255,0.06) inset !important;
+            -webkit-text-fill-color: #fff !important;
+            caret-color: #fff;
+            background: rgba(255,255,255,0.06) !important;
+            border: 2px solid rgba(255,255,255,0.18);
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        /* Firefox autofill */
+        .form-control:-moz-autofill {
+            box-shadow: 0 0 0px 1000px rgba(255,255,255,0.06) inset !important;
+            -moz-text-fill-color: #fff !important;
+            background: rgba(255,255,255,0.06) !important;
+            caret-color: #fff;
+        }
+
+        /* Selection highlight should remain dark-themed */
+        .form-control::selection { background: rgba(177,108,234,0.35); color: #fff; }
+        ::-moz-selection { background: rgba(177,108,234,0.35); color: #fff; }
 
         .form-row {
             display: flex;
-            gap: 20px;
-            align-items: end;
+            gap: 16px;
+            align-items: center;
+            justify-content: center;
         }
 
         .form-row .form-group {
-            flex: 1;
+            flex: 0;
+            display: flex;
+            justify-content: center;
         }
 
         .btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            border-radius: 8px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
+            color: #fff;
+            border: 2px solid rgba(255,255,255,0.18);
+            padding: 14px 24px;
+            border-radius: 999px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             width: auto;
-            min-width: 120px;
+            min-width: 220px;
             line-height: 1.2;
-            height: 48px;
+            height: 52px;
             box-sizing: border-box;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+        .btn-cta {
+            background: linear-gradient(180deg, #15162d, #12132A) padding-box,
+                        linear-gradient(90deg, #B16CEA, #FF6A88) border-box;
+            border: 2px solid transparent;
+        }
+        .btn-in-input {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 44px;
+            min-width: 160px;
+            padding: 10px 18px;
         }
 
         .btn:hover {
-            background: #357abd;
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.35);
+            border-color: rgba(255,255,255,0.35);
         }
 
         .btn:disabled {
-            background: var(--text-muted);
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
@@ -156,53 +220,57 @@
 
         .progress-section {
             display: none;
-            background: var(--surface-color);
-            padding: 40px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 50px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: saturate(140%) blur(6px);
+            padding: 24px 28px;
+            border-radius: 16px;
+            box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+            margin: 28px auto 50px auto;
+            max-width: 860px;
         }
 
         .progress-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
+        .progress-header h3 { margin: 0; font-size: 16px; color: #EAEAF2; font-weight: 700; }
 
-        .progress-status {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
+        .progress-status { font-weight: 700; color: #B16CEA; letter-spacing: .2px; }
 
         .progress-bar {
             width: 100%;
-            height: 12px;
-            background-color: var(--border-color);
-            border-radius: 6px;
+            height: 10px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 999px;
             overflow: hidden;
             margin-bottom: 10px;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(90deg, #B16CEA, #FF6A88, #6EE7B7);
             width: 0%;
             transition: width 0.3s ease;
+            box-shadow: 0 0 12px rgba(177,108,234,0.4);
         }
 
-        .progress-message {
-            color: var(--text-muted);
-            font-style: italic;
-        }
+        .progress-message { color: #B9BCD6; font-style: italic; }
 
         .results-section {
             display: none;
-            margin-top: 50px;
-            padding: 40px;
-            background: var(--surface-color);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
+            margin-top: 40px;
+            padding: 24px 28px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: saturate(140%) blur(6px);
+            border-radius: 16px;
+            box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+            max-width: 860px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .results-header {
@@ -224,12 +292,26 @@
             line-height: 1.3;
         }
         
-        .results-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-color);
-            margin: 0;
+        .video-title-text { margin: 0; font-size: 20px; font-weight: 700; color: #EAEAF2; }
+
+        /* Small icon button for download */
+        .icon-btn { 
+            background: transparent; 
+            border: 1px solid rgba(255,255,255,0.18); 
+            color: #EAEAF2; 
+            width: 36px; height: 36px; 
+            border-radius: 50%; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            transition: all .2s ease; 
         }
+        .icon-btn:hover { 
+            border-color: rgba(255,255,255,0.35); 
+            background: rgba(255,255,255,0.06); 
+        }
+        .icon-btn-sm { width: 30px; height: 30px; font-size: 0.9rem; }
 
         .download-buttons {
             display: flex;
@@ -261,20 +343,19 @@
 
         .tab-content {
             display: none;
-            background: var(--surface-color);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            min-height: 400px;
+            background: transparent; /* no inner box */
+            padding: 0; /* content uses outer card padding */
+            border-radius: 0;
+            box-shadow: none;
+            min-height: 0;
+            position: relative;
         }
 
         .tab-content.active {
             display: block;
         }
 
-        .markdown-content {
-            line-height: 1.8;
-        }
+        .markdown-content { line-height: 1.8; color: #EAEAF2; font-size: 16px; }
 
         .markdown-content h1,
         .markdown-content h2,
@@ -310,9 +391,9 @@
         }
 
         .alert-error {
-            background-color: #f8d7da;
+            background-color: rgba(231, 76, 60, 0.12);
             border-color: var(--danger-color);
-            color: #721c24;
+            color: #ffc9c9;
         }
 
         .alert-success {
@@ -337,18 +418,87 @@
 
         .footer {
             text-align: center;
-            margin-top: 80px;
+            margin-top: 120px;
             margin-bottom: 50px;
             padding: 40px 30px;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border-color);
+            color: #9EA3C7;
+            border-top: 1px solid rgba(255,255,255,0.08);
         }
 
-        .language-switcher {
+        .hero-badge-right {
             position: absolute;
-            top: 20px;
-            right: 180px;
-            z-index: 1000;
+            top: 24px;
+            right: 32px;
+            color: #B9BCD6;
+            font-size: 14px;
+            opacity: 0.92;
+        }
+
+        .hero-note {
+            margin-top: 18px;
+            color: #A8ACCC;
+            font-size: 14px;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        /* Supported platforms marquee */
+        .platforms {
+            margin: 28px auto 8px auto;
+            max-width: 1200px;
+            padding: 0 24px;
+        }
+        .platforms-label {
+            text-align: center;
+            color: #A8ACCC;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .logo-marquee {
+            position: relative;
+            overflow: hidden;
+            /* Heights driven by variables to avoid cropping */
+            --logo-height: 26px;
+            --logo-vpad: 12px;
+            height: calc(var(--logo-height) + var(--logo-vpad) * 2);
+            mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+            /* Tunable spacing/size */
+            --logo-gap: clamp(10px, 1.8vw, 16px);
+            --logo-width: clamp(70px, 5.5vw, 84px);
+        }
+        .marquee-track {
+            position: absolute;
+            left: 0; top: 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            line-height: 0;
+            gap: var(--logo-gap);
+            padding: var(--logo-vpad) 8px;
+            animation: marquee 40s linear infinite;
+            will-change: transform;
+            height: var(--logo-height);
+        }
+        .marquee-track img {
+            height: calc(var(--logo-height) - 4px);
+            width: auto;
+            object-fit: contain;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 0 rgba(0,0,0,0));
+            transition: opacity .2s ease;
+            display: block;
+            margin: 2px 0; /* prevent top/bottom cropping due to pixel rounding */
+        }
+        .logo-marquee a { text-decoration: none; display: inline-flex; align-items: center; height: var(--logo-height); }
+        .logo-item { display: inline-flex; align-items: center; justify-content: center; height: var(--logo-height); width: var(--logo-width); }
+        .marquee-track:nth-child(2) { left: var(--loop-distance, 100%); }
+        .logo-fallback { color: #B9BCD6; opacity: .85; font-size: 14px; white-space: nowrap; display: inline-flex; align-items: center; height: var(--logo-height); }
+        .logo-marquee:hover .marquee-track { animation-play-state: running; }
+        .marquee-track img:hover { opacity: 1; }
+        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(calc(-1 * var(--loop-distance, 100%))); } }
+        @media (prefers-reduced-motion: reduce) {
+            .marquee-track { animation-duration: 0s; }
         }
 
         .lang-toggle-btn {
@@ -385,6 +535,9 @@
             .form-row {
                 flex-direction: column;
             }
+            /* On small screens, stack CTA below input */
+            .btn-in-input { position: static; width: 100%; margin-top: 12px; transform: none; }
+            .form-control { padding-right: 20px; height: 52px; }
             
             .results-header {
                 flex-direction: column;
@@ -400,29 +553,24 @@
                 overflow-x: auto;
             }
 
-            .language-switcher {
-                position: static;
-                text-align: center;
-                margin-bottom: 20px;
-            }
+            .language-switcher { position: static; text-align: center; margin-bottom: 20px; }
+
+            .btn { min-width: 180px; height: 48px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 头部 -->
+        <!-- Header -->
         <div class="header">
-            <div class="language-switcher">
-                <button id="langToggle" class="lang-toggle-btn">
-                    <span id="langText">English</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-            </div>
-            <h1><i class="fas fa-video"></i> <span data-i18n="title">AI Video Transcriber</span></h1>
-            <p data-i18n="subtitle">Supports automatic transcription and AI summary for YouTube, Tiktok, Bilibili and other platforms</p>
+            <h1 class="hero-title">
+                <span class="hero-free">Free <span class="gradient-text">Video Transcript</span></span>
+                <span class="break hero-generator">Generator</span>
+            </h1>
+            <p class="hero-subtitle">Instant transcripts from 2,000+ platforms</p>
         </div>
 
-        <!-- 输入表单 -->
+        <!-- Hero Form -->
         <div class="form-card">
             <form id="videoForm">
                 <div class="form-group">
@@ -431,40 +579,32 @@
                     </label>
                     <input type="url" id="videoUrl" class="form-control" 
                            data-i18n-placeholder="video_url_placeholder"
-                           placeholder="Enter YouTube, Tiktok, Bilibili or other platform video URLs..."
+                           placeholder="Enter YouTube, TikTok, or other platform video URL..."
                            required>
                 </div>
                 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="summaryLanguage">
-                            <i class="fas fa-language"></i> <span data-i18n="summary_language">Summary Language</span>
-                        </label>
-                        <select id="summaryLanguage" class="form-control">
-                            <option value="en">English</option>
-                            <option value="zh">中文（简体）</option>
-                            <option value="es">Español</option>
-                            <option value="fr">Français</option>
-                            <option value="de">Deutsch</option>
-                            <option value="it">Italiano</option>
-                            <option value="pt">Português</option>
-                            <option value="ru">Русский</option>
-                            <option value="ja">日本語</option>
-                            <option value="ko">한국어</option>
-                            <option value="ar">العربية</option>
-                        </select>
-                    </div>
+                    <style>#summaryLanguage{display:none;} label[for="summaryLanguage"]{display:none;}</style>
                     
                     <div class="form-group">
-                        <button type="submit" class="btn" id="submitBtn">
-                            <i class="fas fa-play"></i> <span data-i18n="start_transcription">Start</span>
+                        <button type="submit" class="btn btn-cta" id="submitBtn">
+                            <span data-i18n="start_transcription">Transcribe</span>
                         </button>
                     </div>
                 </div>
             </form>
         </div>
 
-        <!-- 进度显示 -->
+        <!-- Supported Platforms -->
+        <section class="platforms" aria-labelledby="platformsHeading">
+            <h2 id="platformsHeading" class="platforms-label">Works with these platforms</h2>
+            <div class="logo-marquee" aria-label="Supported platforms logos carousel">
+                <div class="marquee-track" id="logosTrackA"></div>
+                <div class="marquee-track" id="logosTrackB" aria-hidden="true"></div>
+            </div>
+        </section>
+
+        <!-- Progress -->
         <div id="progressSection" class="progress-section">
             <div class="progress-header">
                 <h3 data-i18n="processing_progress">Processing Progress</h3>
@@ -476,62 +616,29 @@
             <div class="progress-message" id="progressMessage" data-i18n="preparing">Preparing...</div>
         </div>
 
-        <!-- 错误提示 -->
+        <!-- Error Alert -->
         <div id="errorAlert" class="alert alert-error" style="display: none;">
             <i class="fas fa-exclamation-triangle"></i>
             <span id="errorMessage"></span>
         </div>
 
-        <!-- 结果显示 -->
+        <!-- Results -->
         <div id="resultsSection" class="results-section">
             <div class="results-header">
                 <div class="video-title-container">
-                    <!-- 移除重复的标题显示，因为内容中已经包含标题 -->
+                    <!-- Title shown here -->
+                    <h3 id="videoTitle" class="video-title-text"></h3>
                 </div>
-                <div class="download-buttons">
-                    <button class="btn btn-success" id="downloadScript">
-                        <span data-i18n="download_transcript">Download Transcript</span>
-                    </button>
-                    <button class="btn btn-info" id="downloadTranslation" style="display: none;">
-                        <span data-i18n="download_translation">Download Translation</span>
-                    </button>
-                    <button class="btn btn-success" id="downloadSummary">
-                        <span data-i18n="download_summary">Download Summary</span>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="content-tabs">
-                <button class="tab-button active" data-tab="script">
-                    <i class="fas fa-file-text"></i> <span data-i18n="transcript_text">Transcript Text</span>
-                </button>
-                <button class="tab-button" data-tab="summary">
-                    <i class="fas fa-clipboard-list"></i> <span data-i18n="intelligent_summary">AI Summary</span>
-                </button>
-                <button class="tab-button" data-tab="translation" id="translationTabBtn" style="display: none;">
-                    <i class="fas fa-language"></i> <span data-i18n="translation">Translation</span>
+                <button class="icon-btn icon-btn-sm" id="downloadScript" title="Download transcript">
+                    <i class="fas fa-download"></i>
                 </button>
             </div>
             
-                        <div id="scriptTab" class="tab-content active">
+            <div id="scriptTab" class="tab-content active">
                 <div class="markdown-content" id="scriptContent"></div>
             </div>
-
-            <div id="translationTab" class="tab-content">
-                <div class="markdown-content" id="translationContent"></div>
-            </div>
-
-            <div id="summaryTab" class="tab-content">
-                <div class="markdown-content" id="summaryContent"></div>
-            </div>
-        </div>
-
-        <!-- 页脚 -->
-        <div class="footer">
-            <p><i class="fas fa-heart" style="color: #e74c3c;"></i> <span data-i18n="footer_text">Powered by AI, supports multi-platform video transcription</span></p>
         </div>
     </div>
-
-    <script src="/static/app.js?v=20250829"></script>
+    <script src="app.js?v=20251017"></script>
 </body>
 </html>

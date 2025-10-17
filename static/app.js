@@ -2,229 +2,115 @@ class VideoTranscriber {
     constructor() {
         this.currentTaskId = null;
         this.eventSource = null;
-        this.apiBase = 'http://localhost:8000/api';
-        this.currentLanguage = 'en'; // 默认英文
+        this.apiBase = 'https://api.vidtranscript.com/api';
+        // i18n removed: fixed English UI
         
-        // 智能进度模拟相关
+        // Smart progress simulation
         this.smartProgress = {
             enabled: false,
-            current: 0,           // 当前显示的进度
-            target: 0,            // 目标进度
-            lastServerUpdate: 0,  // 最后一次服务器更新的进度
-            interval: null,       // 定时器
-            estimatedDuration: 0, // 预估总时长（秒）
-            startTime: null,      // 任务开始时间
-            stage: 'preparing'    // 当前阶段
+            current: 0,           // current displayed progress
+            target: 0,            // target progress
+            lastServerUpdate: 0,  // last server-reported progress
+            interval: null,       // timer
+            estimatedDuration: 0, // estimated total duration (seconds)
+            startTime: null,      // task start time
+            stage: 'preparing'    // current stage
         };
         
-        this.translations = {
-            en: {
-                title: "AI Video Transcriber",
-                subtitle: "Supports automatic transcription and AI summary for YouTube, Tiktok, Bilibili and other platforms",
-                video_url: "Video URL",
-                video_url_placeholder: "Enter YouTube, Tiktok, Bilibili or other platform video URLs...",
-                summary_language: "Summary Language",
-                start_transcription: "Start",
-                processing_progress: "Processing Progress",
-                preparing: "Preparing...",
-                transcription_results: "Results",
-                download_transcript: "Download Transcript",
-                download_translation: "Download Translation",
-                download_summary: "Download Summary",
-                transcript_text: "Transcript Text",
-                translation: "Translation",
-                intelligent_summary: "AI Summary",
-                footer_text: "Powered by AI, supports multi-platform video transcription",
-                processing: "Processing...",
-                downloading_video: "Downloading video...",
-                parsing_video: "Parsing video info...",
-                transcribing_audio: "Transcribing audio...",
-                optimizing_transcript: "Optimizing transcript...",
-                generating_summary: "Generating summary...",
-                completed: "Processing completed!",
-                error_invalid_url: "Please enter a valid video URL",
-                error_processing_failed: "Processing failed: ",
-                error_task_not_found: "Task not found",
-                error_task_not_completed: "Task not completed yet",
-                error_invalid_file_type: "Invalid file type",
-                error_file_not_found: "File not found",
-                error_download_failed: "Download failed: ",
-                error_no_file_to_download: "No file available for download"
-            },
-            zh: {
-                title: "AI视频转录器",
-                subtitle: "支持YouTube、Tiktok、Bilibili等平台的视频自动转录和智能摘要",
-                video_url: "视频链接",
-                video_url_placeholder: "请输入YouTube、Tiktok、Bilibili等平台的视频链接...",
-                summary_language: "摘要语言",
-                start_transcription: "开始转录",
-                processing_progress: "处理进度",
-                preparing: "准备中...",
-                transcription_results: "转录结果",
-                download_transcript: "下载转录",
-                download_translation: "下载翻译",
-                download_summary: "下载摘要",
-                transcript_text: "转录文本",
-                translation: "翻译",
-                intelligent_summary: "智能摘要",
-                footer_text: "由AI驱动，支持多平台视频转录",
-                processing: "处理中...",
-                downloading_video: "正在下载视频...",
-                parsing_video: "正在解析视频信息...",
-                transcribing_audio: "正在转录音频...",
-                optimizing_transcript: "正在优化转录文本...",
-                generating_summary: "正在生成摘要...",
-                completed: "处理完成！",
-                error_invalid_url: "请输入有效的视频链接",
-                error_processing_failed: "处理失败: ",
-                error_task_not_found: "任务不存在",
-                error_task_not_completed: "任务尚未完成",
-                error_invalid_file_type: "无效的文件类型",
-                error_file_not_found: "文件不存在",
-                error_download_failed: "下载文件失败: ",
-                error_no_file_to_download: "没有可下载的文件"
-            }
+        this.msg = {
+            start_transcription: "Transcribe",
+            processing_progress: "Processing Progress",
+            preparing: "Preparing...",
+            download_transcript: "Download Transcript",
+            transcript_text: "Transcript Text",
+            processing: "Processing...",
+            downloading_video: "Downloading video...",
+            parsing_video: "Parsing video info...",
+            transcribing_audio: "Transcribing audio...",
+            completed: "Processing completed!",
+            error_invalid_url: "Please enter a valid video URL",
+            error_processing_failed: "Processing failed: ",
+            error_task_not_found: "Task not found",
+            error_task_not_completed: "Task not completed yet",
+            error_invalid_file_type: "Invalid file type",
+            error_file_not_found: "File not found",
+            error_download_failed: "Download failed: ",
+            error_no_file_to_download: "No file available for download"
         };
         
         this.initializeElements();
         this.bindEvents();
-        this.initializeLanguage();
+        // i18n removed
     }
     
     initializeElements() {
-        // 表单元素
+        // Form elements
         this.form = document.getElementById('videoForm');
         this.videoUrlInput = document.getElementById('videoUrl');
         this.summaryLanguageSelect = document.getElementById('summaryLanguage');
         this.submitBtn = document.getElementById('submitBtn');
         
-        // 进度元素
+        // Progress elements
         this.progressSection = document.getElementById('progressSection');
         this.progressStatus = document.getElementById('progressStatus');
         this.progressFill = document.getElementById('progressFill');
         this.progressMessage = document.getElementById('progressMessage');
         
-        // 错误提示
+        // Error alert
         this.errorAlert = document.getElementById('errorAlert');
         this.errorMessage = document.getElementById('errorMessage');
         
-        // 结果元素
+        // Results elements
         this.resultsSection = document.getElementById('resultsSection');
         this.scriptContent = document.getElementById('scriptContent');
-        this.translationContent = document.getElementById('translationContent');
-        this.summaryContent = document.getElementById('summaryContent');
         this.downloadScriptBtn = document.getElementById('downloadScript');
-        this.downloadTranslationBtn = document.getElementById('downloadTranslation');
-        this.downloadSummaryBtn = document.getElementById('downloadSummary');
-        this.translationTabBtn = document.getElementById('translationTabBtn');
         
-        // 调试：检查元素是否正确初始化
-        console.log('[DEBUG] 🔧 初始化检查:', {
-            translationTabBtn: !!this.translationTabBtn,
-            elementId: this.translationTabBtn ? this.translationTabBtn.id : 'N/A'
-        });
+        // Debug: check element initialization
+        console.log('[DEBUG] 🔧 Init check:');
         
-        // 标签页
+        // Tabs
         this.tabButtons = document.querySelectorAll('.tab-button');
         this.tabContents = document.querySelectorAll('.tab-content');
         
-        // 语言切换按钮
-        this.langToggle = document.getElementById('langToggle');
-        this.langText = document.getElementById('langText');
+        // No language toggle
     }
     
     bindEvents() {
-        // 表单提交
+        // Form submit
         this.form.addEventListener('submit', (e) => {
             e.preventDefault();
             this.startTranscription();
         });
         
-        // 标签页切换
+        // Tab switching
         this.tabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 this.switchTab(button.dataset.tab);
             });
         });
         
-        // 下载按钮
+        // Download buttons
         if (this.downloadScriptBtn) {
             this.downloadScriptBtn.addEventListener('click', () => {
                 this.downloadFile('script');
             });
         }
         
-        if (this.downloadTranslationBtn) {
-            this.downloadTranslationBtn.addEventListener('click', () => {
-                this.downloadFile('translation');
-            });
-        }
+        // Only transcript download supported
         
-        if (this.downloadSummaryBtn) {
-            this.downloadSummaryBtn.addEventListener('click', () => {
-                this.downloadFile('summary');
-            });
-        }
-        
-        // 语言切换按钮
-        this.langToggle.addEventListener('click', () => {
-            this.toggleLanguage();
-        });
+        // No language toggle
     }
     
-    initializeLanguage() {
-        // 设置默认语言为英文
-        this.switchLanguage('en');
-    }
-    
-    toggleLanguage() {
-        // 切换语言
-        this.currentLanguage = this.currentLanguage === 'en' ? 'zh' : 'en';
-        this.switchLanguage(this.currentLanguage);
-    }
-    
-    switchLanguage(lang) {
-        this.currentLanguage = lang;
-        
-        // 更新语言按钮文本 - 显示当前语言
-        this.langText.textContent = lang === 'en' ? 'English' : '中文';
-        
-        // 更新页面文本
-        this.updatePageText();
-        
-        // 更新HTML lang属性
-        document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
-        
-        // 更新页面标题
-        document.title = this.t('title');
-    }
-    
-    t(key) {
-        return this.translations[this.currentLanguage][key] || key;
-    }
-    
-    updatePageText() {
-        // 更新所有带有data-i18n属性的元素
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            element.textContent = this.t(key);
-        });
-        
-        // 更新placeholder
-        document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
-            const key = element.getAttribute('data-i18n-placeholder');
-            element.placeholder = this.t(key);
-        });
-    }
+    // i18n removed: use fixed English strings
+    t(key) { return (this.msg && this.msg[key]) || key; }
     
     async startTranscription() {
-        // 立即禁用按钮，防止重复点击
+        // Disable button immediately to prevent double submit
         if (this.submitBtn.disabled) {
-            return; // 如果按钮已禁用，直接返回
+            return; // If already disabled, do nothing
         }
         
         const videoUrl = this.videoUrlInput.value.trim();
-        const summaryLanguage = this.summaryLanguageSelect.value;
         
         if (!videoUrl) {
             this.showError(this.t('error_invalid_url'));
@@ -232,16 +118,15 @@ class VideoTranscriber {
         }
         
         try {
-            // 立即禁用按钮和隐藏错误
+            // Disable button and hide errors immediately
             this.setLoading(true);
             this.hideError();
             this.hideResults();
             this.showProgress();
             
-            // 发送转录请求
+            // Send transcription request
             const formData = new FormData();
             formData.append('url', videoUrl);
-            formData.append('summary_language', summaryLanguage);
             
             const response = await fetch(`${this.apiBase}/process-video`, {
                 method: 'POST',
@@ -250,23 +135,23 @@ class VideoTranscriber {
             
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.detail || '请求失败');
+                throw new Error(errorData.detail || 'Request failed');
             }
             
             const data = await response.json();
             this.currentTaskId = data.task_id;
             
-            console.log('[DEBUG] ✅ 任务已创建，Task ID:', this.currentTaskId);
+            console.log('[DEBUG] ✅ Task created, Task ID:', this.currentTaskId);
             
-            // 启动智能进度模拟
+            // Start smart progress simulation
             this.initializeSmartProgress();
-            this.updateProgress(5, this.t('preparing'), true);
+            this.updateProgress(5, this.msg.preparing, true);
             
-            // 使用SSE实时接收状态更新
+            // Start SSE to receive realtime updates
             this.startSSE();
             
         } catch (error) {
-            console.error('启动转录失败:', error);
+            console.error('Failed to start transcription:', error);
             this.showError(this.t('error_processing_failed') + error.message);
             this.setLoading(false);
             this.hideProgress();
@@ -276,88 +161,88 @@ class VideoTranscriber {
     startSSE() {
         if (!this.currentTaskId) return;
         
-        console.log('[DEBUG] 🔄 启动SSE连接，Task ID:', this.currentTaskId);
+        console.log('[DEBUG] 🔄 Start SSE connection, Task ID:', this.currentTaskId);
         
-        // 创建EventSource连接
+        // Create EventSource connection
         this.eventSource = new EventSource(`${this.apiBase}/task-stream/${this.currentTaskId}`);
         
         this.eventSource.onmessage = (event) => {
             try {
                 const task = JSON.parse(event.data);
                 
-                // 忽略心跳消息
+                // Ignore heartbeat messages
                 if (task.type === 'heartbeat') {
-                    console.log('[DEBUG] 💓 收到心跳');
+                    console.log('[DEBUG] 💓 Heartbeat received');
                     return;
                 }
                 
-                console.log('[DEBUG] 📊 收到SSE任务状态:', {
+                console.log('[DEBUG] 📊 SSE task status received:', {
                     status: task.status,
                     progress: task.progress,
                     message: task.message
                 });
                 
-                // 更新进度 (标记为服务器推送)
-                console.log('[DEBUG] 📈 更新进度条:', `${task.progress}% - ${task.message}`);
+                // Update progress (server-pushed)
+                console.log('[DEBUG] 📈 Update progress bar:', `${task.progress}% - ${task.message}`);
                 this.updateProgress(task.progress, task.message, true);
                 
                 if (task.status === 'completed') {
-                    console.log('[DEBUG] ✅ 任务完成，显示结果');
-                    this.stopSmartProgress(); // 停止智能进度模拟
+                    console.log('[DEBUG] ✅ Task completed, showing results');
+                    this.stopSmartProgress(); // stop smart progress
                     this.stopSSE();
                     this.setLoading(false);
                     this.hideProgress();
-                    this.showResults(task.script, task.summary, task.video_title, task.translation, task.detected_language, task.summary_language);
+                    this.showResults(task.script, task.video_title);
                 } else if (task.status === 'error') {
-                    console.log('[DEBUG] ❌ 任务失败:', task.error);
-                    this.stopSmartProgress(); // 停止智能进度模拟
+                    console.log('[DEBUG] ❌ Task failed:', task.error);
+                    this.stopSmartProgress(); // stop smart progress
                     this.stopSSE();
                     this.setLoading(false);
                     this.hideProgress();
-                    this.showError(task.error || '处理过程中发生错误');
+                    this.showError(task.error || 'An error occurred during processing');
                 }
             } catch (error) {
-                console.error('[DEBUG] 解析SSE数据失败:', error);
+                console.error('[DEBUG] Failed to parse SSE data:', error);
             }
         };
         
         this.eventSource.onerror = async (error) => {
-            console.error('[DEBUG] SSE连接错误:', error);
+            console.error('[DEBUG] SSE connection error:', error);
             this.stopSSE();
 
-            // 兜底：查询任务最终状态，若已完成则直接渲染结果
+            // Fallback: fetch final status; if completed, render results
             try {
                 if (this.currentTaskId) {
                     const resp = await fetch(`${this.apiBase}/task-status/${this.currentTaskId}`);
                     if (resp.ok) {
                         const task = await resp.json();
                         if (task && task.status === 'completed') {
-                            console.log('[DEBUG] 🔁 SSE断开，但任务已完成，直接渲染结果');
+                            console.log('[DEBUG] 🔁 SSE disconnected, task completed. Rendering results');
                             this.stopSmartProgress();
                             this.setLoading(false);
                             this.hideProgress();
-                            this.showResults(task.script, task.summary, task.video_title, task.translation, task.detected_language, task.summary_language);
+                            this.showResults(task.script, task.video_title);
                             return;
                         }
                     }
                 }
             } catch (e) {
-                console.error('[DEBUG] 兜底查询任务状态失败:', e);
+                console.error('[DEBUG] Fallback status check failed:', e);
             }
 
-            // 未完成则提示并保持页面状态（可由用户重试或自动重连）
-            this.showError(this.t('error_processing_failed') + 'SSE连接断开');
+            // If not completed, notify and keep state (user can retry or reconnect)
+            this.showError(this.t('error_processing_failed') + 'SSE connection disconnected');
             this.setLoading(false);
         };
         
         this.eventSource.onopen = () => {
-            console.log('[DEBUG] 🔗 SSE连接已建立');
+            console.log('[DEBUG] 🔗 SSE connection established');
         };
     }
     
     stopSSE() {
         if (this.eventSource) {
-            console.log('[DEBUG] 🔌 关闭SSE连接');
+            console.log('[DEBUG] 🔌 Close SSE connection');
             this.eventSource.close();
             this.eventSource = null;
         }
@@ -366,69 +251,59 @@ class VideoTranscriber {
 
     
     updateProgress(progress, message, fromServer = false) {
-        console.log('[DEBUG] 🎯 updateProgress调用:', { progress, message, fromServer });
+        console.log('[DEBUG] 🎯 updateProgress called:', { progress, message, fromServer });
         
         if (fromServer) {
-            // 服务器推送的真实进度
+            // Server-pushed real progress
             this.handleServerProgress(progress, message);
         } else {
-            // 本地模拟进度
+            // Local simulated progress
             this.updateProgressDisplay(progress, message);
         }
     }
     
     handleServerProgress(serverProgress, message) {
-        console.log('[DEBUG] 📡 处理服务器进度:', serverProgress);
+        console.log('[DEBUG] 📡 Handle server progress:', serverProgress);
         
-        // 停止当前的模拟进度
+        // Stop current simulated progress
         this.stopSmartProgress();
         
-        // 更新服务器进度记录
+        // Update last server progress
         this.smartProgress.lastServerUpdate = serverProgress;
         this.smartProgress.current = serverProgress;
         
-        // 立即显示服务器进度
+        // Immediately update UI with server progress
         this.updateProgressDisplay(serverProgress, message);
         
-        // 确定当前处理阶段和预估目标
+        // Determine stage and target
         this.updateProgressStage(serverProgress, message);
         
-        // 重新启动智能进度模拟
+        // Restart smart progress simulation
         this.startSmartProgress();
     }
     
     updateProgressStage(progress, message) {
-        // 根据进度和消息确定处理阶段
-        // 解析信息通常发生在长时间下载之前或期间，
-        // 若此时仅将目标设为25%，进度会在长下载阶段停在25%。
-        // 为了持续“假装增长”，将解析阶段的目标直接提升到60%，
-        // 覆盖整个下载阶段，直到服务器推送新的更高阶段。
-        if (message.includes('解析') || message.includes('parsing')) {
+        // Determine stage based on progress and message
+        if (message.includes('parsing')) {
             this.smartProgress.stage = 'parsing';
             this.smartProgress.target = 60;
-        } else if (message.includes('下载') || message.includes('downloading')) {
+        } else if (message.includes('downloading')) {
             this.smartProgress.stage = 'downloading';
             this.smartProgress.target = 60;
-        } else if (message.includes('转录') || message.includes('transcrib')) {
+        } else if (message.includes('transcrib')) {
             this.smartProgress.stage = 'transcribing';
             this.smartProgress.target = 80;
-        } else if (message.includes('优化') || message.includes('optimiz')) {
-            this.smartProgress.stage = 'optimizing';
-            this.smartProgress.target = 90;
-        } else if (message.includes('摘要') || message.includes('summary')) {
-            this.smartProgress.stage = 'summarizing';
-            this.smartProgress.target = 95;
-        } else if (message.includes('完成') || message.includes('completed')) {
+        } else if (message.includes('completed')) {
             this.smartProgress.stage = 'completed';
             this.smartProgress.target = 100;
         }
         
-        // 如果当前进度超过预设目标，调整目标
+        // If current progress exceeds target, adjust target
         if (progress >= this.smartProgress.target) {
             this.smartProgress.target = Math.min(progress + 10, 100);
         }
         
-        console.log('[DEBUG] 🎯 阶段更新:', {
+        console.log('[DEBUG] 🎯 Stage updated:', {
             stage: this.smartProgress.stage,
             target: this.smartProgress.target,
             current: progress
@@ -436,7 +311,7 @@ class VideoTranscriber {
     }
     
     initializeSmartProgress() {
-        // 初始化智能进度状态
+        // Initialize smart progress state
         this.smartProgress.enabled = false;
         this.smartProgress.current = 0;
         this.smartProgress.target = 15;
@@ -444,11 +319,11 @@ class VideoTranscriber {
         this.smartProgress.startTime = Date.now();
         this.smartProgress.stage = 'preparing';
         
-        console.log('[DEBUG] 🔧 智能进度模拟已初始化');
+        console.log('[DEBUG] 🔧 Smart progress initialized');
     }
     
     startSmartProgress() {
-        // 启动智能进度模拟
+        // Start smart progress simulation
         if (this.smartProgress.interval) {
             clearInterval(this.smartProgress.interval);
         }
@@ -456,12 +331,12 @@ class VideoTranscriber {
         this.smartProgress.enabled = true;
         this.smartProgress.startTime = this.smartProgress.startTime || Date.now();
         
-        // 每500ms更新一次模拟进度
+        // Update simulated progress every 500ms
         this.smartProgress.interval = setInterval(() => {
             this.simulateProgress();
         }, 500);
         
-        console.log('[DEBUG] 🚀 智能进度模拟已启动');
+        console.log('[DEBUG] 🚀 Smart progress started');
     }
     
     stopSmartProgress() {
@@ -470,7 +345,7 @@ class VideoTranscriber {
             this.smartProgress.interval = null;
         }
         this.smartProgress.enabled = false;
-        console.log('[DEBUG] ⏹️ 智能进度模拟已停止');
+        console.log('[DEBUG] ⏹️ Smart progress stopped');
     }
     
     simulateProgress() {
@@ -479,13 +354,13 @@ class VideoTranscriber {
         const current = this.smartProgress.current;
         const target = this.smartProgress.target;
         
-        // 如果已经达到目标，暂停模拟
+        // Pause simulation if target reached
         if (current >= target) return;
         
-        // 计算进度增量（基于阶段的不同速度）
+        // Compute progress increment based on stage
         let increment = this.calculateProgressIncrement();
         
-        // 确保不超过目标进度
+        // Ensure not exceeding target
         const newProgress = Math.min(current + increment, target);
         
         if (newProgress > current) {
@@ -495,31 +370,29 @@ class VideoTranscriber {
     }
     
     calculateProgressIncrement() {
-        const elapsedTime = (Date.now() - this.smartProgress.startTime) / 1000; // 秒
+        const elapsedTime = (Date.now() - this.smartProgress.startTime) / 1000; // seconds
         
-        // 基于不同阶段的预估速度
+        // Stage-based speed config
         const stageConfig = {
-            'parsing': { speed: 0.3, maxTime: 30 },      // 解析阶段：30秒内到25%
-            'downloading': { speed: 0.2, maxTime: 120 }, // 下载阶段：2分钟内到60%
-            'transcribing': { speed: 0.15, maxTime: 180 }, // 转录阶段：3分钟内到80%
-            'optimizing': { speed: 0.25, maxTime: 60 },  // 优化阶段：1分钟内到90%
-            'summarizing': { speed: 0.3, maxTime: 30 }   // 摘要阶段：30秒内到95%
+            'parsing': { speed: 0.3, maxTime: 30 },      // parsing stage: to 25% within 30s
+            'downloading': { speed: 0.2, maxTime: 120 }, // downloading: to 60% within 2min
+            'transcribing': { speed: 0.15, maxTime: 180 } // transcribing: to 80% within 3min
         };
         
         const config = stageConfig[this.smartProgress.stage] || { speed: 0.2, maxTime: 60 };
         
-        // 基础增量：每500ms增加的百分比
+        // Base increment per 500ms
         let baseIncrement = config.speed;
         
-        // 时间因子：如果时间过长，加快进度
+        // Time factor: speed up if taking too long
         if (elapsedTime > config.maxTime) {
             baseIncrement *= 1.5;
         }
         
-        // 距离因子：距离目标越近，速度越慢
+        // Distance factor: slow down near target
         const remaining = this.smartProgress.target - this.smartProgress.current;
         if (remaining < 5) {
-            baseIncrement *= 0.3; // 接近目标时放慢
+            baseIncrement *= 0.3; // slow down when near target
         }
         
         return baseIncrement;
@@ -527,43 +400,36 @@ class VideoTranscriber {
     
     getCurrentStageMessage() {
         const stageMessages = {
-            'parsing': this.t('parsing_video'),
-            'downloading': this.t('downloading_video'),
-            'transcribing': this.t('transcribing_audio'),
-            'optimizing': this.t('optimizing_transcript'),
-            'summarizing': this.t('generating_summary'),
-            'completed': this.t('completed')
+            'parsing': this.msg.parsing_video,
+            'downloading': this.msg.downloading_video,
+            'transcribing': this.msg.transcribing_audio,
+            'completed': this.msg.completed
         };
         
         return stageMessages[this.smartProgress.stage] || this.t('processing');
     }
     
     updateProgressDisplay(progress, message) {
-        // 实际更新UI显示
-        const roundedProgress = Math.round(progress * 10) / 10; // 保留1位小数
+        // Update UI display
+        const roundedProgress = Math.round(progress * 10) / 10; // keep 1 decimal
         this.progressStatus.textContent = `${roundedProgress}%`;
         this.progressFill.style.width = `${roundedProgress}%`;
-        console.log('[DEBUG] 📏 进度条已更新:', this.progressFill.style.width);
+        console.log('[DEBUG] 📏 Progress bar updated:', this.progressFill.style.width);
         
-        // 翻译常见的进度消息
-        let translatedMessage = message;
-        if (message.includes('下载视频') || message.includes('downloading') || message.includes('Downloading')) {
-            translatedMessage = this.t('downloading_video');
-        } else if (message.includes('解析视频') || message.includes('parsing') || message.includes('Parsing')) {
-            translatedMessage = this.t('parsing_video');
-        } else if (message.includes('转录') || message.includes('transcrib') || message.includes('Transcrib')) {
-            translatedMessage = this.t('transcribing_audio');
-        } else if (message.includes('优化转录') || message.includes('optimizing') || message.includes('Optimizing')) {
-            translatedMessage = this.t('optimizing_transcript');
-        } else if (message.includes('摘要') || message.includes('summary') || message.includes('Summary')) {
-            translatedMessage = this.t('generating_summary');
-        } else if (message.includes('完成') || message.includes('complet') || message.includes('Complet')) {
-            translatedMessage = this.t('completed');
-        } else if (message.includes('准备') || message.includes('prepar') || message.includes('Prepar')) {
-            translatedMessage = this.t('preparing');
+        // Normalize common progress messages
+        let normalized = message;
+        if (message.includes('downloading') || message.includes('Downloading')) {
+            normalized = this.msg.downloading_video;
+        } else if (message.includes('parsing') || message.includes('Parsing')) {
+            normalized = this.msg.parsing_video;
+        } else if (message.includes('transcrib') || message.includes('Transcrib')) {
+            normalized = this.msg.transcribing_audio;
+        } else if (message.includes('complet') || message.includes('Complet')) {
+            normalized = this.msg.completed;
+        } else if (message.includes('prepar') || message.includes('Prepar')) {
+            normalized = this.msg.preparing;
         }
-        
-        this.progressMessage.textContent = translatedMessage;
+        this.progressMessage.textContent = normalized;
     }
     
     showProgress() {
@@ -574,90 +440,39 @@ class VideoTranscriber {
         this.progressSection.style.display = 'none';
     }
     
-    showResults(script, summary, videoTitle = null, translation = null, detectedLanguage = null, summaryLanguage = null) {
-
-        // 调试日志：检查翻译相关参数
-        console.log('[DEBUG] 🔍 showResults参数:', {
-            hasTranslation: !!translation,
-            translationLength: translation ? translation.length : 0,
-            detectedLanguage,
-            summaryLanguage,
-            languagesDifferent: detectedLanguage !== summaryLanguage
-        });
-
-        // 渲染markdown内容，确保参数不为null
+    showResults(script, videoTitle = null) {
         const safeScript = script || '';
-        const safeSummary = summary || '';
-        const safeTranslation = translation || '';
-        
-        this.scriptContent.innerHTML = safeScript ? marked.parse(safeScript) : '';
-        this.summaryContent.innerHTML = safeSummary ? marked.parse(safeSummary) : '';
-        
-        // 处理翻译
-        const shouldShowTranslation = safeTranslation && detectedLanguage && summaryLanguage && detectedLanguage !== summaryLanguage;
-        
-        console.log('[DEBUG] 🌐 翻译显示判断:', {
-            safeTranslation: !!safeTranslation,
-            detectedLanguage: detectedLanguage,
-            summaryLanguage: summaryLanguage,
-            languagesDifferent: detectedLanguage !== summaryLanguage,
-            shouldShowTranslation: shouldShowTranslation,
-            translationTabBtn: !!this.translationTabBtn,
-            downloadTranslationBtn: !!this.downloadTranslationBtn
-        });
-        
-        // 调试：检查DOM元素（多种方式）
-        const debugBtn1 = document.getElementById('translationTabBtn');
-        const debugBtn2 = document.querySelector('#translationTabBtn');
-        const debugBtn3 = document.querySelector('[data-tab="translation"]');
-        
-        console.log('[DEBUG] 🔍 DOM检查:', {
-            getElementById: !!debugBtn1,
-            querySelector_id: !!debugBtn2,
-            querySelector_attr: !!debugBtn3,
-            currentDisplay: debugBtn1 ? debugBtn1.style.display : 'N/A',
-            computedStyle: debugBtn1 ? window.getComputedStyle(debugBtn1).display : 'N/A'
-        });
-        
-        // 使用备用方法获取元素
-        const actualBtn = debugBtn1 || debugBtn2 || debugBtn3;
-        if (actualBtn && !this.translationTabBtn) {
-            this.translationTabBtn = actualBtn;
-            console.log('[DEBUG] 🔄 使用备用方法找到翻译按钮');
+        const titleEl = document.getElementById('videoTitle');
+        if (titleEl) {
+            titleEl.textContent = videoTitle || '';
         }
+        // Clean legacy headings/timestamps and render as plain paragraph
+        const cleanParagraph = (text) => {
+            const lines = (text || '').split(/\r?\n/);
+            const filtered = lines.filter((l) =>
+                !/^\s*#/.test(l) &&
+                !/Detected Language/i.test(l) &&
+                !/Language Probability/i.test(l) &&
+                !/Transcription Content/i.test(l) &&
+                !/^\s*source:/i.test(l)
+            );
+            let joined = filtered.join(' ');
+            // Remove asterisks and excessive markdown remnants
+            joined = joined.replace(/\*/g, '');
+            // Remove timestamp blocks like [00:00 - 00:03] or [0:12 - 0:15]
+            joined = joined.replace(/\[\s*\d{1,2}:\d{2}(?::\d{2})?\s*-\s*\d{1,2}:\d{2}(?::\d{2})?\s*\]/g, '');
+            return joined.replace(/\s+/g, ' ').trim();
+        };
+        const paragraph = cleanParagraph(safeScript);
+        this.scriptContent.textContent = paragraph;
         
-        if (shouldShowTranslation) {
-            console.log('[DEBUG] ✅ 显示翻译标签页');
-            // 显示翻译标签页和按钮
-            if (this.translationTabBtn) {
-                this.translationTabBtn.style.display = 'inline-block';
-                this.translationTabBtn.style.visibility = 'visible';
-                console.log('[DEBUG] 🎯 翻译按钮样式已设置:', this.translationTabBtn.style.display);
-            }
-            if (this.downloadTranslationBtn) {
-                this.downloadTranslationBtn.style.display = 'inline-flex';
-            }
-            if (this.translationContent) {
-                this.translationContent.innerHTML = marked.parse(safeTranslation);
-            }
-        } else {
-            console.log('[DEBUG] ❌ 隐藏翻译标签页');
-            // 隐藏翻译标签页和按钮
-            if (this.translationTabBtn) {
-                this.translationTabBtn.style.display = 'none';
-            }
-            if (this.downloadTranslationBtn) {
-                this.downloadTranslationBtn.style.display = 'none';
-            }
-        }
-        
-        // 显示结果区域
+        // Show results section
         this.resultsSection.style.display = 'block';
         
-        // 滚动到结果区域
+        // Scroll to results
         this.resultsSection.scrollIntoView({ behavior: 'smooth' });
         
-        // 高亮代码
+        // Syntax highlight
         if (window.Prism) {
             Prism.highlightAll();
         }
@@ -668,11 +483,11 @@ class VideoTranscriber {
     }
     
     switchTab(tabName) {
-        // 移除所有活动状态
+        // Remove all active states
         this.tabButtons.forEach(btn => btn.classList.remove('active'));
         this.tabContents.forEach(content => content.classList.remove('active'));
         
-        // 激活选中的标签页
+        // Activate selected tab
         const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
         const activeContent = document.getElementById(`${tabName}Tab`);
         
@@ -684,61 +499,56 @@ class VideoTranscriber {
     
     async downloadFile(fileType) {
         if (!this.currentTaskId) {
-            this.showError(this.t('error_no_file_to_download'));
+            this.showError(this.msg.error_no_file_to_download);
             return;
         }
         
         try {
-            // 首先获取任务状态，获得实际文件名
+            // First, fetch task status to get actual filenames
             const taskResponse = await fetch(`${this.apiBase}/task-status/${this.currentTaskId}`);
             if (!taskResponse.ok) {
-                throw new Error('获取任务状态失败');
+                throw new Error('Failed to fetch task status');
             }
             
             const taskData = await taskResponse.json();
             let filename;
             
-            // 根据文件类型获取对应的文件名
-            switch(fileType) {
-                case 'script':
-                    if (taskData.script_path) {
-                        filename = taskData.script_path.split('/').pop(); // 获取文件名部分
-                    } else {
-                        filename = `transcript_${taskData.safe_title || 'untitled'}_${taskData.short_id || 'unknown'}.md`;
-                    }
-                    break;
-                case 'summary':
-                    if (taskData.summary_path) {
-                        filename = taskData.summary_path.split('/').pop();
-                    } else {
-                        filename = `summary_${taskData.safe_title || 'untitled'}_${taskData.short_id || 'unknown'}.md`;
-                    }
-                    break;
-                case 'translation':
-                    if (taskData.translation_path) {
-                        filename = taskData.translation_path.split('/').pop();
-                    } else if (taskData.translation_filename) {
-                        filename = taskData.translation_filename;
-                    } else {
-                        filename = `translation_${taskData.safe_title || 'untitled'}_${taskData.short_id || 'unknown'}.md`;
-                    }
-                    break;
-                default:
-                    throw new Error('未知的文件类型');
+            // Only transcript downloads are supported
+            if (fileType !== 'script') {
+                throw new Error('Unknown file type');
+            }
+            // Prefer server-side .txt; otherwise build clean .txt locally
+            const titleText = (document.getElementById('videoTitle')?.textContent || '').trim() || 'Video';
+            const contentText = (this.scriptContent?.textContent || '').trim();
+            const localTxt = `${titleText}\n\n${contentText}\n`;
+
+            if (taskData.script_path && taskData.script_path.endsWith('.txt')) {
+                filename = taskData.script_path.split('/').pop();
+                // Direct download .txt from server
+                const encodedFilename = encodeURIComponent(filename);
+                const link = document.createElement('a');
+                link.href = `${this.apiBase}/download/${encodedFilename}`;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                // Generate .txt client-side to avoid legacy .md downloads
+                filename = `${taskData.safe_title || 'untitled'}.txt`;
+                const blob = new Blob([localTxt], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             }
             
-            // 使用简单直接的下载方式
-            const encodedFilename = encodeURIComponent(filename);
-            const link = document.createElement('a');
-            link.href = `${this.apiBase}/download/${encodedFilename}`;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
         } catch (error) {
-            console.error('下载文件失败:', error);
-            this.showError(this.t('error_download_failed') + error.message);
+            console.error('File download failed:', error);
+            this.showError(this.msg.error_download_failed + error.message);
         }
     }
     
@@ -746,9 +556,9 @@ class VideoTranscriber {
         this.submitBtn.disabled = loading;
         
         if (loading) {
-            this.submitBtn.innerHTML = `<div class="loading-spinner"></div> ${this.t('processing')}`;
+            this.submitBtn.innerHTML = `<div class="loading-spinner"></div> ${this.msg.processing}`;
         } else {
-            this.submitBtn.innerHTML = `<i class="fas fa-play"></i> ${this.t('start_transcription')}`;
+            this.submitBtn.innerHTML = `<i class="fas fa-play"></i> ${this.msg.start_transcription}`;
         }
     }
     
@@ -756,10 +566,10 @@ class VideoTranscriber {
         this.errorMessage.textContent = message;
         this.errorAlert.style.display = 'block';
         
-        // 滚动到错误提示
+        // Scroll to error alert
         this.errorAlert.scrollIntoView({ behavior: 'smooth' });
         
-        // 5秒后自动隐藏错误提示
+        // Auto-hide after 5s
         setTimeout(() => {
             this.hideError();
         }, 5000);
@@ -770,26 +580,105 @@ class VideoTranscriber {
     }
 }
 
-// 页面加载完成后初始化应用
+// Init app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.transcriber = new VideoTranscriber();
     
-    // 添加一些示例链接提示
+    // Add example URL hints
     const urlInput = document.getElementById('videoUrl');
     urlInput.addEventListener('focus', () => {
         if (!urlInput.value) {
-            urlInput.placeholder = '例如: https://www.youtube.com/watch?v=... 或 https://www.bilibili.com/video/...';
+            urlInput.placeholder = 'e.g.: https://www.youtube.com/watch?v=...';
         }
     });
     
     urlInput.addEventListener('blur', () => {
         if (!urlInput.value) {
-            urlInput.placeholder = '请输入YouTube、Bilibili等平台的视频链接...';
+            urlInput.placeholder = 'Enter YouTube, TikTok, or other platform video URL...';
         }
     });
+    
+    // Render supported platforms logos marquee (Top 20 requested)
+    const SUPPORTED_PLATFORMS = [
+        // Major Video Platforms
+        { name: 'YouTube', slug: 'youtube' },
+        { name: 'Vimeo', slug: 'vimeo' },
+        { name: 'Dailymotion', slug: 'dailymotion' },
+        { name: 'TikTok', slug: 'tiktok' },
+        // Social Media
+        { name: 'Instagram', slug: 'instagram' },
+        { name: 'X (Twitter)', slug: 'x' },
+        { name: 'Facebook', slug: 'facebook' },
+        { name: 'Reddit', slug: 'reddit' },
+        // Streaming & Live
+        { name: 'Twitch', slug: 'twitch' },
+        { name: 'Kick', slug: 'kick' },
+        // Audio Platforms
+        { name: 'SoundCloud', slug: 'soundcloud' },
+        { name: 'Bandcamp', slug: 'bandcamp' },
+        { name: 'Spotify', slug: 'spotify' },
+        // Asian Platforms
+        { name: 'BiliBili', slug: 'bilibili' },
+        { name: 'Douyin', slug: 'douyin' },
+        // News & Media
+        { name: 'BBC iPlayer', slug: 'bbciplayer' },
+        { name: 'CNN', slug: 'cnn' },
+        // Educational
+        { name: 'Coursera', slug: 'coursera' },
+        { name: 'Khan Academy', slug: 'khanacademy' },
+        { name: 'TED', slug: 'ted' }
+    ];
+    
+    const buildLogoNode = (p) => {
+        const src = `https://cdn.simpleicons.org/${p.slug}/B9BCD6`;
+        const img = new Image();
+        img.alt = `${p.name} logo`;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.src = src;
+        img.onerror = () => {
+            const span = document.createElement('span');
+            span.className = 'logo-fallback';
+            span.textContent = p.name;
+            img.replaceWith(span);
+        };
+        const wrapper = document.createElement('span');
+        wrapper.className = 'logo-item';
+        wrapper.appendChild(img);
+        return wrapper;
+    };
+    
+    const trackA = document.getElementById('logosTrackA');
+    const trackB = document.getElementById('logosTrackB');
+    if (trackA && trackB) {
+        SUPPORTED_PLATFORMS.forEach(p => trackA.appendChild(buildLogoNode(p)));
+        SUPPORTED_PLATFORMS.forEach(p => trackB.appendChild(buildLogoNode(p)));
+        
+        const marquee = document.querySelector('.logo-marquee');
+        const applyMarqueeMetrics = () => {
+            if (!marquee) return;
+            // Measure full width of track A (includes gaps)
+            const distance = trackA.scrollWidth;
+            // Set loop distance CSS var (used by keyframes and track B offset)
+            marquee.style.setProperty('--loop-distance', `${distance}px`);
+            // Compute duration based on distance for steady speed (~80px/s)
+            const pxPerSec = 80;
+            const duration = Math.max(20, Math.round((distance / pxPerSec) * 100) / 100);
+            trackA.style.animationDuration = `${duration}s`;
+            trackB.style.animationDuration = `${duration}s`;
+        };
+        // Initial compute (wait a tick for layout)
+        requestAnimationFrame(applyMarqueeMetrics);
+        // Recompute on resize
+        let marqueeResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(marqueeResizeTimer);
+            marqueeResizeTimer = setTimeout(applyMarqueeMetrics, 150);
+        });
+    }
 });
 
-// 处理页面刷新时的清理工作
+// Cleanup on page unload
 window.addEventListener('beforeunload', () => {
     if (window.transcriber && window.transcriber.eventSource) {
         window.transcriber.stopSSE();
