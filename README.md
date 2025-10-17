@@ -10,6 +10,11 @@ An AI-powered video transcription tool that supports multiple video platforms in
 
 </div>
 
+> Hosted Frontend
+>
+> A live frontend is available at https://vidtranscript.com/.
+> For privacy, performance, and cost reasons, you still run the backend yourself on your machine. This README explains how to start the local backend (dev or prod). The site works fully local by default when you run `python3 start.py` and open `http://localhost:8000`.
+
 ## Table of Contents
 
 - [Features](#-features)
@@ -172,83 +177,6 @@ Notes:
 - The site runs fully local by default. `static/index.html` loads `/static/app.js` first, and `static/app.js` calls the API at relative path `/api` (same origin). No CORS needed.
 - For fastest demos, use `WHISPER_MODEL_SIZE=tiny` or `tiny.en`.
 
-### Demo without GCP costs
-
-You can demo the app publicly by running the backend on your laptop and proxying the Netlify site’s `/api/*` to your local API via an HTTPS tunnel.
-
-#### Option A: Local only (everything on your machine)
-
-```bash
-# From the inner project folder
-cd ~/Desktop/VidTranscript/VidTranscript
-source venv/bin/activate
-python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
-# Open: http://127.0.0.1:8000
-```
-
-#### Option B: Public demo (frontend on Netlify, backend on your laptop)
-
-1. **Start backend locally**
-```bash
-cd ~/Desktop/VidTranscript/VidTranscript
-source venv/bin/activate
-python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
-```
-
-2. **Expose your local API via HTTPS tunnel** (choose one)
-```bash
-# ngrok (install: brew install --cask ngrok; then ngrok config add-authtoken <TOKEN>)
-ngrok http http://127.0.0.1:8000
-# copy the https URL it prints, e.g. https://<random>.ngrok-free.app
-
-# or Cloudflare Tunnel
-brew install cloudflared
-cloudflared tunnel --url http://127.0.0.1:8000
-# copy the https URL it prints, e.g. https://<random>.trycloudflare.com
-```
-
-3. **Point Netlify to your tunnel**
-
-Create/edit `static/_redirects` so the browser calls your site and Netlify proxies to your tunnel:
-
-```
-/api/*  https://YOUR_TUNNEL_HOST/api/:splat  200
-```
-
-Commit and deploy:
-
-```bash
-git add static/_redirects
-git commit -m "demo: proxy /api to local tunnel"
-git push
-```
-
-4. **Open the site**
-
-Visit `https://vidtranscript.com` (or `https://www.vidtranscript.com`). All `/api/*` calls will be proxied to your local backend via the tunnel.
-
-5. **Stop after demo**
-
-- Ctrl+C to stop `uvicorn` and the tunnel.
-- Optionally remove the `_redirects` line and redeploy so production no longer proxies to your laptop.
-
-#### Netlify settings (static site)
-
-- **Publish directory**: `static/`
-- JS loader in `static/index.html` loads `/app.js` first (Netlify) with fallback to `/static/app.js` (local dev).
-- `_redirects` must be placed under `static/` to apply.
-
-#### SSE through Netlify (for live progress)
-
-Add `static/_headers` to keep Server‑Sent Events unbuffered:
-
-```
-/api/task-stream/*
-  Cache-Control: no-cache
-  Content-Type: text/event-stream; charset=utf-8
-  Connection: keep-alive
-  X-Accel-Buffering: no
-```
 
 ## 📖 Usage Guide
 
@@ -498,7 +426,7 @@ We welcome Issues and Pull Requests!
 
 ## 📞 Contact
 
-For questions or suggestions, please submit an Issue or contact Wendy.
+For questions or suggestions, please submit an Issue or contact Hsiao Ting.
 
 ## ⭐ Star History
 
