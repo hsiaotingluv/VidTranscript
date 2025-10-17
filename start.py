@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AI视频转录器启动脚本
+AI Video Transcriber startup script
 """
 
 import os
@@ -9,14 +9,13 @@ import subprocess
 from pathlib import Path
 
 def check_dependencies():
-    """检查依赖是否安装"""
+    """Check if required dependencies are installed"""
     import sys
     required_packages = {
         "fastapi": "fastapi",
         "uvicorn": "uvicorn", 
         "yt-dlp": "yt_dlp",
-        "faster-whisper": "faster_whisper",
-        "openai": "openai"
+        "faster-whisper": "faster_whisper"
     }
     
     missing_packages = []
@@ -27,91 +26,77 @@ def check_dependencies():
             missing_packages.append(display_name)
     
     if missing_packages:
-        print("❌ 缺少以下依赖包:")
+        print("❌ Missing the following dependencies:")
         for package in missing_packages:
             print(f"   - {package}")
-        print("\n请运行以下命令安装依赖:")
+        print("\nPlease install dependencies with:")
         print("source venv/bin/activate && pip install -r requirements.txt")
         return False
     
-    print("✅ 所有依赖已安装")
+    print("✅ All dependencies are installed")
     return True
 
 def check_ffmpeg():
-    """检查FFmpeg是否安装"""
+    """Check if FFmpeg is installed"""
     try:
         subprocess.run(["ffmpeg", "-version"], 
                       stdout=subprocess.DEVNULL, 
                       stderr=subprocess.DEVNULL, 
                       check=True)
-        print("✅ FFmpeg已安装")
+        print("✅ FFmpeg is installed")
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
-        print("❌ 未找到FFmpeg")
-        print("请安装FFmpeg:")
+        print("❌ FFmpeg not found")
+        print("Please install FFmpeg:")
         print("  macOS: brew install ffmpeg")
         print("  Ubuntu: sudo apt install ffmpeg")
-        print("  Windows: 从官网下载 https://ffmpeg.org/download.html")
+        print("  Windows: Download from https://ffmpeg.org/download.html")
         return False
 
 def setup_environment():
-    """设置环境变量"""
-    # 设置OpenAI配置
-    if not os.getenv("OPENAI_API_KEY"):
-        print("⚠️  警告: 未设置OPENAI_API_KEY环境变量")
-        print("请设置环境变量: export OPENAI_API_KEY=your_api_key_here")
-        return False
-    
-    print("✅ 已设置OpenAI API Key")
-    
-    if not os.getenv("OPENAI_BASE_URL"):
-        os.environ["OPENAI_BASE_URL"] = "https://oneapi.basevec.com/v1"
-        print("✅ 已设置OpenAI Base URL")
-    
-    # 设置其他默认配置
+    """Setup environment variables"""
+    # Defaults
     if not os.getenv("WHISPER_MODEL_SIZE"):
         os.environ["WHISPER_MODEL_SIZE"] = "base"
-    
-    print("🔑 OpenAI API已配置，摘要功能可用")
     return True
 
 def main():
-    """主函数"""
-    # 检查是否使用生产模式（禁用热重载）
+    """Main entrypoint"""
+    # Check production mode (disable hot reload)
     production_mode = "--prod" in sys.argv or os.getenv("PRODUCTION_MODE") == "true"
     
-    print("🚀 AI视频转录器启动检查")
+    print("🚀 AI Video Transcriber startup check")
     if production_mode:
-        print("🔒 生产模式 - 热重载已禁用")
+        print("🔒 Production mode - hot reload disabled")
     else:
-        print("🔧 开发模式 - 热重载已启用")
+        print("🔧 Development mode - hot reload enabled")
     print("=" * 50)
     
-    # 检查依赖
+    # Check dependencies
     if not check_dependencies():
         sys.exit(1)
     
-    # 检查FFmpeg
+    # Check FFmpeg
     if not check_ffmpeg():
-        print("⚠️  FFmpeg未安装，可能影响某些视频格式的处理")
+        print("⚠️  FFmpeg not installed; some formats may be affected")
     
-    # 设置环境
+    # Setup environment
     setup_environment()
     
-    print("\n🎉 启动检查完成!")
+    print("\n🎉 Startup checks complete!")
     print("=" * 50)
     
-    # 启动服务器
+    # Start server
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", 8000))
     
-    print(f"\n🌐 启动服务器...")
-    print(f"   地址: http://localhost:{port}")
-    print(f"   按 Ctrl+C 停止服务")
+    print(f"\n🌐 Starting server...")
+    print(f"   URL: http://localhost:{port}")
+    print(f"   Press Ctrl+C to stop")
     print("=" * 50)
     
     try:
-        # 切换到backend目录并启动服务
+        # Change to backend directory and start
         backend_dir = Path(__file__).parent / "backend"
         os.chdir(backend_dir)
         
@@ -121,16 +106,16 @@ def main():
             "--port", str(port)
         ]
         
-        # 只在开发模式下启用热重载
+        # Enable hot reload only in dev mode
         if not production_mode:
             cmd.append("--reload")
         
         subprocess.run(cmd)
         
     except KeyboardInterrupt:
-        print("\n\n👋 服务已停止")
+        print("\n\n👋 Service stopped")
     except Exception as e:
-        print(f"\n❌ 启动失败: {e}")
+        print(f"\n❌ Startup failed: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
