@@ -95,6 +95,26 @@ class VideoTranscriber {
                 this.downloadFile('script');
             });
         }
+        // Copy to clipboard
+        const copyBtn = document.getElementById('copyScript');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', async () => {
+                const text = (this.scriptContent?.textContent || '').trim();
+                if (!text) return;
+                const ok = await this.copyToClipboard(text);
+                if (ok) {
+                    const original = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    copyBtn.title = 'Copied!';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                        copyBtn.title = 'Copy transcript';
+                    }, 1200);
+                } else {
+                    this.showError('Failed to copy to clipboard');
+                }
+            });
+        }
         
         // Only transcript download supported
         
@@ -155,6 +175,34 @@ class VideoTranscriber {
             this.showError(this.t('error_processing_failed') + error.message);
             this.setLoading(false);
             this.hideProgress();
+        }
+    }
+
+    async copyToClipboard(text) {
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+                return true;
+            }
+        } catch (err) {
+            console.warn('[DEBUG] navigator.clipboard failed, falling back:', err);
+        }
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.top = '-1000px';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            ta.setSelectionRange(0, ta.value.length);
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return !!ok;
+        } catch (e) {
+            console.error('Fallback copy failed:', e);
+            return false;
         }
     }
     

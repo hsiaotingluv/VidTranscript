@@ -3,7 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Video Transcriber</title>
+    <title>AI Video Transcriber – Free Video Transcript Generator</title>
+    <meta name="description" content="Generate clean, single‑paragraph transcripts from YouTube, TikTok, Instagram and 2,000+ platforms. Fast, free, and privacy‑friendly.">
+    <link rel="canonical" href="https://vidtranscript.com/">
+
+    <!-- Preconnects -->
+    <link rel="preconnect" href="https://api.vidtranscript.com" crossorigin>
+    <link rel="dns-prefetch" href="//api.vidtranscript.com">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="AI Video Transcriber – Free Video Transcript Generator">
+    <meta property="og:description" content="Generate clean, single‑paragraph transcripts from YouTube, TikTok, Instagram and 2,000+ platforms. Fast, free, and privacy‑friendly.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vidtranscript.com/">
+    <meta property="og:image" content="https://vidtranscript.com/static/og-image.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AI Video Transcriber – Free Video Transcript Generator">
+    <meta name="twitter:description" content="Generate clean, single‑paragraph transcripts from YouTube, TikTok, Instagram and 2,000+ platforms. Fast, free, and privacy‑friendly.">
+    <meta name="twitter:image" content="https://vidtranscript.com/static/og-image.png">
+
+    <!-- JSON-LD: WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "AI Video Transcriber",
+      "url": "https://vidtranscript.com/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://vidtranscript.com/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
@@ -629,9 +666,14 @@
                     <!-- Title shown here -->
                     <h3 id="videoTitle" class="video-title-text"></h3>
                 </div>
-                <button class="icon-btn icon-btn-sm" id="downloadScript" title="Download transcript">
-                    <i class="fas fa-download"></i>
-                </button>
+                <div class="download-buttons">
+                    <button class="icon-btn icon-btn-sm" id="copyScript" title="Copy transcript">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="icon-btn icon-btn-sm" id="downloadScript" title="Download transcript">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
             </div>
             
             <div id="scriptTab" class="tab-content active">
@@ -639,6 +681,8 @@
             </div>
         </div>
     </div>
-    <script src="app.js?v=20251017"></script>
+    <script src="/static/app.js?v=20251017"
+            onerror="(function(){var s=document.createElement('script');s.src='app.js?v=20251017';document.body.appendChild(s);}())">
+    </script>
 </body>
 </html>

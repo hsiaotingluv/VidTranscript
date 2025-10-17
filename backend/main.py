@@ -141,6 +141,14 @@ async def read_root():
     """Return frontend page"""
     return FileResponse(str(PROJECT_ROOT / "static" / "index.html"))
 
+@app.get("/robots.txt")
+async def robots_txt():
+    return FileResponse(str(PROJECT_ROOT / "static" / "robots.txt"))
+
+@app.get("/sitemap.xml")
+async def sitemap_xml():
+    return FileResponse(str(PROJECT_ROOT / "static" / "sitemap.xml"))
+
 @app.post("/api/process-video")
 async def process_video(
     url: str = Form(...)
