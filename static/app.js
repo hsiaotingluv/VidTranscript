@@ -2,7 +2,8 @@ class VideoTranscriber {
     constructor() {
         this.currentTaskId = null;
         this.eventSource = null;
-        this.apiBase = 'https://api.vidtranscript.com/api';
+        // Default: use relative /api so Netlify (or local server) can proxy
+        this.apiBase = '/api';
         // i18n removed: fixed English UI
         
         // Smart progress simulation
@@ -39,6 +40,18 @@ class VideoTranscriber {
         };
         
         this.initializeElements();
+        // Allow runtime API override via query param: ?api=https://host[:port][/api]
+        try {
+            const url = new URL(window.location.href);
+            const apiOverride = url.searchParams.get('api');
+            if (apiOverride) {
+                let base = apiOverride.trim();
+                // Normalize: ensure it includes /api at the end
+                if (!/\/api\/?$/.test(base)) base = base.replace(/\/$/, '') + '/api';
+                this.apiBase = base;
+                console.log('[DEBUG] 🔧 API base overridden to:', this.apiBase);
+            }
+        } catch (_) { /* ignore */ }
         this.bindEvents();
         // i18n removed
     }
