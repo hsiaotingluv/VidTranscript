@@ -2,9 +2,9 @@
 
 # AI Video Transcriber
 
-English | [中文](README_ZH.md)
+English
 
-An AI-powered video transcription tool that supports multiple video platforms including YouTube, Tiktok, Bilibili, and 30+ platforms.
+An AI-powered video transcription tool that supports multiple video platforms including YouTube, Tiktok, Bilibili, and 2,000+ platforms.
 
 ![Interface](en-video.png)
 
@@ -33,7 +33,7 @@ An AI-powered video transcription tool that supports multiple video platforms in
 
 ## ✨ Features
 
-- 🎥 **Multi-Platform Support**: Works with YouTube, Tiktok, Bilibili, and 2000+ more
+- 🎥 **Multi-Platform Support**: Works with YouTube, Tiktok, Bilibili, and 2,000+ more
 - 🗣️ **Intelligent Transcription**: High-accuracy speech-to-text using Faster-Whisper
 - ⚡ **Fast, Local Processing**: End-to-end transcription with Faster-Whisper
 - 📱 **Mobile-Friendly**: Perfect support for mobile devices
