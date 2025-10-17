@@ -14,8 +14,8 @@ import json
 import re
 import shutil
 
-from video_processor import VideoProcessor
-from transcriber import Transcriber
+from .video_processor import VideoProcessor
+from .transcriber import Transcriber
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,10 +23,16 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="AI Video Transcriber", version="1.0.0")
 
-# CORS middleware
+# CORS middleware (allow Netlify and custom domains)
+ALLOWED_ORIGINS = [
+    "https://vidtranscript.netlify.app",
+    "https://vidtranscript.com",
+    "https://www.vidtranscript.com",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
