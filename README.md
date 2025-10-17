@@ -2,8 +2,6 @@
 
 # AI Video Transcriber
 
-English
-
 An AI-powered video transcription tool that supports multiple video platforms including YouTube, Tiktok, Bilibili, and 2,000+ platforms.
 
 ![Interface](en-video.png)
