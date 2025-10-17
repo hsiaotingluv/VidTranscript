@@ -2,56 +2,57 @@ import os
 from faster_whisper import WhisperModel
 import logging
 from typing import Optional
+import unicodedata
+import re
 
 logger = logging.getLogger(__name__)
 
 class Transcriber:
-    """音频转录器，使用Faster-Whisper进行语音转文字"""
+    """Audio transcriber using Faster-Whisper for speech-to-text"""
     
     def __init__(self, model_size: str = "base"):
         """
-        初始化转录器
+        Initialize the transcriber
         
         Args:
-            model_size: Whisper模型大小 (tiny, base, small, medium, large)
+            model_size: Whisper model size (tiny, base, small, medium, large)
         """
         self.model_size = model_size
         self.model = None
-        self.last_detected_language = None
         
     def _load_model(self):
-        """延迟加载模型"""
+        """Lazy-load the Whisper model"""
         if self.model is None:
-            logger.info(f"正在加载Whisper模型: {self.model_size}")
+            logger.info(f"Loading Whisper model: {self.model_size}")
             try:
                 self.model = WhisperModel(self.model_size, device="cpu", compute_type="int8")
-                logger.info("模型加载完成")
+                logger.info("Model loaded")
             except Exception as e:
-                logger.error(f"模型加载失败: {str(e)}")
-                raise Exception(f"模型加载失败: {str(e)}")
+                logger.error(f"Model load failed: {str(e)}")
+                raise Exception(f"Model load failed: {str(e)}")
     
     async def transcribe(self, audio_path: str, language: Optional[str] = None) -> str:
         """
-        转录音频文件
+        Transcribe an audio file
         
         Args:
-            audio_path: 音频文件路径
-            language: 指定语言（可选，如果不指定则自动检测）
+            audio_path: path to the audio file
+            language: explicit language (optional; auto-detected if None)
             
         Returns:
-            转录文本（Markdown格式）
+            Transcript text (Markdown format)
         """
         try:
-            # 检查文件是否存在
+            # Check file existence
             if not os.path.exists(audio_path):
-                raise Exception(f"音频文件不存在: {audio_path}")
+                raise Exception(f"Audio file not found: {audio_path}")
             
-            # 加载模型
+            # Load model
             self._load_model()
             
-            logger.info(f"开始转录音频: {audio_path}")
+            logger.info(f"Start transcribing audio: {audio_path}")
             
-            # 直接调用会阻塞事件循环；放入线程避免阻塞
+            # Call in a thread to avoid blocking the event loop
             import asyncio
             def _do_transcribe():
                 return self.model.transcribe(
@@ -59,104 +60,76 @@ class Transcriber:
                     language=language,
                     beam_size=5,
                     best_of=5,
-                    temperature=[0.0, 0.2, 0.4],  # 使用温度递增策略
-                    # 更稳健：开启VAD与阈值，降低静音/噪音导致的重复
+                    temperature=[0.0, 0.2, 0.4],  # temperature ladder
+                    # Robust: enable VAD and thresholds to reduce duplicates from silence/noise
                     vad_filter=True,
                     vad_parameters={
-                        "min_silence_duration_ms": 900,  # 静音检测时长
-                        "speech_pad_ms": 300  # 语音填充
+                        "min_silence_duration_ms": 900,  # silence detection window
+                        "speech_pad_ms": 300  # speech pad
                     },
-                    no_speech_threshold=0.7,  # 无语音阈值
-                    compression_ratio_threshold=2.3,  # 压缩比阈值，检测重复
-                    log_prob_threshold=-1.0,  # 日志概率阈值
-                    # 避免错误累积导致的连环重复
+                    no_speech_threshold=0.7,  # no-speech threshold
+                    compression_ratio_threshold=2.3,  # compression ratio threshold
+                    log_prob_threshold=-1.0,  # log prob threshold
+                    # Avoid error accumulation causing repeating artifacts
                     condition_on_previous_text=False
                 )
             segments, info = await asyncio.to_thread(_do_transcribe)
             
-            detected_language = info.language
-            self.last_detected_language = detected_language  # 保存检测到的语言
-            logger.info(f"检测到的语言: {detected_language}")
-            logger.info(f"语言检测概率: {info.language_probability:.2f}")
-            
-            # 组装转录结果
-            transcript_lines = []
-            transcript_lines.append("# Video Transcription")
-            transcript_lines.append("")
-            transcript_lines.append(f"**Detected Language:** {detected_language}")
-            transcript_lines.append(f"**Language Probability:** {info.language_probability:.2f}")
-            transcript_lines.append("")
-            transcript_lines.append("## Transcription Content")
-            transcript_lines.append("")
-            
-            # 添加时间戳和文本
+            # Build initial paragraph
+            texts = []
             for segment in segments:
-                start_time = self._format_time(segment.start)
-                end_time = self._format_time(segment.end)
-                text = segment.text.strip()
-                
-                transcript_lines.append(f"**[{start_time} - {end_time}]**")
-                transcript_lines.append("")
-                transcript_lines.append(text)
-                transcript_lines.append("")
-            
-            transcript_text = "\n".join(transcript_lines)
-            logger.info("转录完成")
+                t = (segment.text or "").strip()
+                if t:
+                    texts.append(t)
+            paragraph = " ".join(texts)
+
+            # If detected language is Chinese or paragraph contains Chinese characters,
+            # re-run in translate mode to produce English
+            try:
+                lang_code = getattr(info, 'language', None) or ''
+            except Exception:
+                lang_code = ''
+            contains_cjk = bool(re.search(r"[\u4e00-\u9fff]", paragraph))
+            if (lang_code.startswith('zh') or lang_code == 'yue' or contains_cjk):
+                def _do_translate():
+                    return self.model.transcribe(
+                        audio_path,
+                        language=lang_code or None,
+                        task='translate',
+                        beam_size=5,
+                        best_of=5,
+                        temperature=[0.0, 0.2, 0.4],
+                        vad_filter=True,
+                        vad_parameters={
+                            "min_silence_duration_ms": 900,
+                            "speech_pad_ms": 300
+                        },
+                        no_speech_threshold=0.7,
+                        compression_ratio_threshold=2.3,
+                        log_prob_threshold=-1.0,
+                        condition_on_previous_text=False
+                    )
+                segments_tr, _info_tr = await asyncio.to_thread(_do_translate)
+                texts_tr = []
+                for seg in segments_tr:
+                    tt = (seg.text or "").strip()
+                    if tt:
+                        texts_tr.append(tt)
+                paragraph = " ".join(texts_tr)
+            # Sanitize: keep only letters, numbers, punctuation, and spaces; remove asterisks
+            cleaned_chars = []
+            for ch in paragraph:
+                if ch == '*':
+                    continue
+                cat = unicodedata.category(ch)
+                if cat and cat[0] in ('L', 'N', 'P', 'Z'):
+                    cleaned_chars.append(ch)
+            sanitized = ''.join(cleaned_chars)
+            transcript_text = " ".join(sanitized.split())
+            logger.info("Transcription completed")
             
             return transcript_text
             
         except Exception as e:
-            logger.error(f"转录失败: {str(e)}")
-            raise Exception(f"转录失败: {str(e)}")
-    
-    def _format_time(self, seconds: float) -> str:
-        """
-        将秒数转换为时分秒格式
-        
-        Args:
-            seconds: 秒数
-            
-        Returns:
-            格式化的时间字符串
-        """
-        hours = int(seconds // 3600)
-        minutes = int((seconds % 3600) // 60)
-        seconds = int(seconds % 60)
-        
-        if hours > 0:
-            return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-        else:
-            return f"{minutes:02d}:{seconds:02d}"
-    
-    def get_supported_languages(self) -> list:
-        """
-        获取支持的语言列表
-        """
-        return [
-            "zh", "en", "ja", "ko", "es", "fr", "de", "it", "pt", "ru",
-            "ar", "hi", "th", "vi", "tr", "pl", "nl", "sv", "da", "no"
-        ]
-    
-    def get_detected_language(self, transcript_text: Optional[str] = None) -> Optional[str]:
-        """
-        获取检测到的语言
-        
-        Args:
-            transcript_text: 转录文本（可选，用于从文本中提取语言信息）
-            
-        Returns:
-            检测到的语言代码
-        """
-        # 如果有保存的语言，直接返回
-        if self.last_detected_language:
-            return self.last_detected_language
-        
-        # 如果提供了转录文本，尝试从中提取语言信息
-        if transcript_text and "**Detected Language:**" in transcript_text:
-            lines = transcript_text.split('\n')
-            for line in lines:
-                if "**Detected Language:**" in line:
-                    lang = line.split(":")[-1].strip()
-                    return lang
-        
-        return None
+            logger.error(f"Transcription failed: {str(e)}")
+            raise Exception(f"Transcription failed: {str(e)}")
